@@ -1,0 +1,124 @@
+1. To locate the web element use following methods which accepts By locator obj and String obj. These methods also highlight and take a screenshot of a found web element. 
+
+1.1 The method accepts By locator as a parameter. It is highly suggested to use instead of wd.findElement( By locator)
+
+public WebElement getWebElement( By locator){
+ FluentWait<WebDriver> wait = new FluentWait<WebDriver>(wd)
+ .withTimeout(java.time.Duration.ofSeconds(20))
+ .pollingEvery(java.time.Duration.ofSeconds(5))
+ .ignoring(NoSuchElementException.class)
+ .ignoring(StaleElementReferenceException.class)
+ .ignoring(ElementClickInterceptedException.class)
+ .ignoring(ElementNotVisibleException.class)
+ .ignoring(ElementNotSelectableException.class)
+ .ignoring(ElementNotInteractableException.class)
+ .ignoring(ElementNotVisibleException.class);
+ WebElement element = wait.until(new com.google.common.base.Function<WebDriver, WebElement>()
+ {
+ public WebElement apply(WebDriver driver) {
+ return driver.findElement(locator);
+ }
+ });
+ highlightAndTakeScreenShot(element);
+ return element;
+}
+1.2 The method accepts String key of a locator and loads the value from the locators.properties file. It is highly suggested to use instead of wd.findElement(xpath(obj.getProperty(object))) 
+
+public WebElement getWebElement(String object){
+ return getWebElement(By.xpath(obj.getProperty(object)));
+}
+1.3 The method accepts String key and returns List<WebElements>. It is highly suggested to use instead of  wd.findElements(xpath(obj.getProperty(object)))  to locate multiple web elements
+
+public List<WebElement> getWebElements(String object){
+ By locator = By.xpath(obj.getProperty(object));
+ FluentWait<WebDriver> wait = new FluentWait<WebDriver>(wd)
+ .withTimeout(java.time.Duration.ofSeconds(15))
+ .pollingEvery(java.time.Duration.ofSeconds(3))
+ .ignoring(NoSuchElementException.class)
+ .ignoring(StaleElementReferenceException.class)
+ .ignoring(ElementClickInterceptedException.class)
+ .ignoring(ElementNotVisibleException.class)
+ .ignoring(ElementNotSelectableException.class)
+ .ignoring(ElementNotInteractableException.class)
+ .ignoring(ElementNotVisibleException.class);
+
+ List<WebElement> element = wait.until(new com.google.common.base.Function<WebDriver, List<WebElement>>()
+ {
+ public List<WebElement> apply(WebDriver driver) {
+ return driver.findElements(locator);
+ }
+ });
+
+ return element;
+}
+1.4 Use the following method when you try to locate an element with partial displayed text. 
+
+// Use when you going to get the web object by xpath containing text (created by Akbar 02.01.19)
+public WebElement getWebElementByPartialText(String objectValue){
+ return getWebElement(By.xpath("//*[contains(text(), '"+objectValue+"')]"));
+}
+1.5 Use the following method when you try to locate an element with the full displayed text.
+
+// returns WebElement object please use this method when you have multiple similar web objects with different values
+// Use when you going to get the web object by xpath containing text (created by Akbar 02.01.19)
+public WebElement getWebElementByText(String objectValue){
+ return getWebElement(By.xpath("//*[text()='"+objectValue+"']"));
+}
+2. It is highly suggested to use the following method to select an option from a dropdown menu when regular Select class select.selectByVisibleText(“text”) not working.
+
+public void selectFromDropDownMenu(String dropDownMenu, String visableText){
+ getWebElement(dropDownMenu).click();
+ getWebElementByPartialText(visableText).click();
+}
+3. It is highly suggested to use the following method when you try to verify the dropdown menu options.
+
+public boolean verifyDropDownMenuOptions(String dropDownMenu, String options){
+ boolean returnValue = false;
+ getWebElement(dropDownMenu).click();
+ String[] arrString = options.split(",");
+ for(String option:arrString){
+ checkElementIsDisplayed(option);
+ returnValue = true;
+ }
+ try {
+ Robot robot = new Robot();
+ robot.delay(3000);
+ robot.keyPress(KeyEvent.VK_TAB);
+ robot.keyPress(KeyEvent.VK_TAB);
+ } catch (AWTException e) {
+ e.printStackTrace();
+ }
+ return returnValue;
+}
+4. The method sends the text to a web element. It is highly suggested to use instead of element.sendKeys(text).
+
+public void sendText(String object, String text){
+ WebElement element = getWebElement(object);
+ element.clear();
+ element.sendKeys(text);
+ element.sendKeys(Keys.TAB);
+}
+
+
+5. The method clicks on a web element. It is highly suggested to use instead of an element.click() method.
+
+public void clickOnButton(String element){
+ WebElement button = getWebElement(element);
+ if(button.isEnabled()){
+ button.click();
+ testStepPassed("Clicked on the button " );
+ }else{
+ testStepFailed("Couldn't click the button !!!!!");
+ }
+}
+6. The method clicks on a link by displayed text. You can use this method when you wanna click on a link or a button which has some text displayed on it( like OK button). The advantage of this method is that you don't have to build xpath for a button or a link, you just pass the displayed text of the button/link. It can be used instead of the regular click() method.
+
+public void clickTheLinkByDisplayedText(String linkText){
+ WebElement button = getWebElementByPartialText(linkText);
+ if(button.isEnabled()){
+ button.click();
+ testStepPassed("Clicked on the button " );
+ }else{
+ testStepFailed("Couldn't click the button !!!!!");
+ }
+}
